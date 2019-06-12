@@ -46,7 +46,7 @@ addresses = {}
 
 HOST = '0.0.0.0'
 PORT = 8181
-BUFSIZ = 1024
+BUFSIZ = 90000
 ADDR = (HOST, PORT)
 
 SERVER = socket(AF_INET, SOCK_STREAM)
