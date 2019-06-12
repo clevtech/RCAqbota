@@ -1,0 +1,11 @@
+[Unit]
+Description=rc_service
+
+[Service]
+User=root
+ExecStart=/RCAqbota/server.py
+TimeoutSec=600
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

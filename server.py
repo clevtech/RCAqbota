@@ -2,7 +2,12 @@
 """Server for multithreaded (asynchronous) chat application."""
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-import secrets
+import random
+import string
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 def accept_incoming_connections():
@@ -16,7 +21,7 @@ def accept_incoming_connections():
 def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
 
-    name = str(secrets.token_urlsafe(4))
+    name = str(id_generator())
     clients[client] = name
 
     while True:
@@ -39,8 +44,8 @@ def broadcast(msg):  # prefix is for name identification.
 clients = {}
 addresses = {}
 
-HOST = ''
-PORT = 5555
+HOST = '0.0.0.0'
+PORT = 8181
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 
