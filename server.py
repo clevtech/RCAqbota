@@ -1,61 +1,39 @@
-#!/usr/bin/env python3
-"""Server for multithreaded (asynchronous) chat application."""
-from socket import AF_INET, socket, SOCK_STREAM
-from threading import Thread
-import random
-import string
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import socket
+import time
+import sys
+import select
+import termios
+import tty
+import sys
 
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+settings = termios.tcgetattr(sys.stdin)
 
 
-def accept_incoming_connections():
-    """Sets up handling for incoming clients."""
-    while True:
-        client, client_address = SERVER.accept()
-        addresses[client] = client_address
-        Thread(target=handle_client, args=(client,)).start()
+def getKey():
+    tty.setraw(sys.stdin.fileno())
+    select.select([sys.stdin], [], [], 0)
+    key = sys.stdin.read(1)
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    return key
 
+sock = socket.socket()
+sock.bind(('', 9090))
+sock.listen(1)
+conn, addr = sock.accept()
 
-def handle_client(client):  # Takes client socket as argument.
-    """Handles a single client connection."""
+print('connected:', addr)
 
-    name = str(id_generator())
-    clients[client] = name
+while 1:
+    try:
+        key = getKey()
+        if key == '\x03':
+            sys.exit()
+        conn.sendall(str(key).encode('utf-8'))
+    except:
+        break
 
-    while True:
-        msg = client.recv(BUFSIZ)
-        if msg:
-            broadcast(msg)
-        else:
-            client.close()
-            del clients[client]
-            break
-
-
-def broadcast(msg):  # prefix is for name identification.
-    """Broadcasts a message to all the clients."""
-
-    for sock in clients:
-        sock.send(msg)
-
-
-clients = {}
-addresses = {}
-
-HOST = '0.0.0.0'
-PORT = 8181
-BUFSIZ = 90000
-ADDR = (HOST, PORT)
-
-SERVER = socket(AF_INET, SOCK_STREAM)
-SERVER.bind(ADDR)
-
-if __name__ == "__main__":
-    SERVER.listen(50000)
-    print("Waiting for connection...")
-    ACCEPT_THREAD = Thread(target=accept_incoming_connections)
-    ACCEPT_THREAD.start()
-    ACCEPT_THREAD.join()
-    SERVER.close()
+conn.close()
